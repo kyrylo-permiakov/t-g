@@ -28,7 +28,7 @@ class Config
     }
 
     /**
-     * @return mixed
+     * @return CacheSystemInterface
      */
     public function getClass(): CacheSystemInterface
     {
@@ -36,11 +36,10 @@ class Config
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getPriority(): int
     {
         return $this->priority;
     }
-
 }
