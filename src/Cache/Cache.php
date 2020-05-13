@@ -18,11 +18,13 @@ class Cache implements CacheInterface
      * @param Config ...$configs
      * @throws SamePriorityException
      */
-    public function __construct(Config ... $configs)
+    public function __construct(Config ...$configs)
     {
         foreach ($configs as $config) {
             if (isset($this->systems[$config->getPriority()])) {
-                throw new SamePriorityException(\sprintf("Same priority: %d already defined in cache layers", $config->getPriority()));
+                throw new SamePriorityException(
+                    \sprintf("Same priority: %d already defined in cache layers", $config->getPriority())
+                );
             }
 
             $this->systems[$config->getPriority()] = $config->getClass();

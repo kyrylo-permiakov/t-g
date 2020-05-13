@@ -4,6 +4,7 @@ namespace TestGenesis\Cache\System;
 
 use TestGenesis\Cache\Exception\CacheWriteFailedException;
 use TestGenesis\Cache\Exception\DirectoryMissingException;
+use TestGenesis\Cache\Exception\InvalidCacheUnitException;
 use TestGenesis\Cache\Exception\NotWritableDirectoryException;
 
 class FileCacheSystem implements CacheSystemInterface
@@ -39,13 +40,11 @@ class FileCacheSystem implements CacheSystemInterface
     /**
      * @param string $key
      * @return mixed
+     * @throws InvalidCacheUnitException
      */
     public function getItem(string $key)
     {
-        $serializedCacheUnit = \file_get_contents($this->getFileName($key));
-        $cacheUnit = \unserialize($serializedCacheUnit);
-
-        return $cacheUnit['value'];
+        return $this->unserealizeCacheUnit($key)['value'];
     }
 
     /**
@@ -55,14 +54,16 @@ class FileCacheSystem implements CacheSystemInterface
      * @return bool
      * @throws CacheWriteFailedException
      */
-    public function setItem(string $key, $value, $ttl = 3600): bool
+    public function setItem(string $key, $value, int $ttl = 3600): bool
     {
         $fileName = $this->getFileName($key);
-        $resource = \fopen($fileName, 'w');
+        $resource = \fopen($fileName, 'wb');
         $serializedCacheUnit = \serialize(['value' => $value, 'expiresAt' => time() + $ttl]);
         if (!fwrite($resource, $serializedCacheUnit)) {
             throw new CacheWriteFailedException(\sprintf("Cant write %s to %s", $serializedCacheUnit, $fileName));
         }
+
+        fclose($resource);
 
         return true;
     }
@@ -92,13 +93,11 @@ class FileCacheSystem implements CacheSystemInterface
     /**
      * @param string $key
      * @return bool
+     * @throws InvalidCacheUnitException
      */
     public function expired(string $key): bool
     {
-        $serializedCacheUnit = \file_get_contents($this->getFileName($key));
-        $cacheUnit = \unserialize($serializedCacheUnit);
-
-        return $cacheUnit['expiresAt'] <= \time();
+        return $this->unserealizeCacheUnit($key)['expiresAt'] <= \time();
     }
 
     /**
@@ -114,8 +113,24 @@ class FileCacheSystem implements CacheSystemInterface
      * @param $key
      * @return string
      */
-    private function getFileName($key)
+    private function getFileName($key): string
     {
         return \sprintf("%s/%s.%s", $this->dir, \md5($key), $this->format);
+    }
+
+    /**
+     * @param $key
+     * @return array
+     * @throws InvalidCacheUnitException
+     */
+    private function unserealizeCacheUnit($key): array
+    {
+        $serializedCacheUnit = \file_get_contents($this->getFileName($key));
+        $cacheUnit = \unserialize($serializedCacheUnit);
+        if (!is_array($cacheUnit)) {
+            throw new InvalidCacheUnitException(\sprintf("Cache unit for %s is broken", $key));
+        }
+
+        return $cacheUnit;
     }
 }

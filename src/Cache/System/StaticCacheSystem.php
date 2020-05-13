@@ -24,7 +24,7 @@ class StaticCacheSystem implements CacheSystemInterface
      * @param int $ttl
      * @return bool
      */
-    public function setItem(string $key, $value, $ttl = 3600): bool
+    public function setItem(string $key, $value, int $ttl = 3600): bool
     {
         $this->items[$key] = [
             'value' => $value,
