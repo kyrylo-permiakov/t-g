@@ -1,0 +1,26 @@
+{
+  "name": "kpermiakov/genesis-test",
+  "description": "test task for genesis team",
+  "type": "project",
+  "require": {
+    "php": "^7.4",
+    "phpunit/phpunit": "^9.1"
+  },
+  "authors": [
+    {
+      "name": "kyrylo-permiakov",
+      "email": "permyakov.kirill@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "TestGenesis\\": "./src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "TestGenesis\\Tests\\": "tests/"
+    }
+  }
+}
